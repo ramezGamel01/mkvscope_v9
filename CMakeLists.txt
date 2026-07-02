@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.13)
+project(mkvscope LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+file(GLOB MKVSCOPE_SRC CONFIGURE_DEPENDS src/*.cpp)
+list(FILTER MKVSCOPE_SRC EXCLUDE REGEX ".*/cli_main.cpp$")
+add_library(mkvscope STATIC ${MKVSCOPE_SRC})
+target_include_directories(mkvscope PUBLIC include)
+target_compile_options(mkvscope PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
+add_executable(mkvscope_cli src/cli_main.cpp)
+target_link_libraries(mkvscope_cli PRIVATE mkvscope)
+
+file(GLOB TEST_SRC CONFIGURE_DEPENDS tests/test_*.cpp)
+foreach(t ${TEST_SRC})
+  get_filename_component(name ${t} NAME_WE)
+  add_executable(${name} ${t})
+  target_link_libraries(${name} PRIVATE mkvscope)
+  add_test(NAME ${name} COMMAND ${name})
+endforeach()
+enable_testing()
